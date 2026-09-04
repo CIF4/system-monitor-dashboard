@@ -3,348 +3,294 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Admin Dashboard | MUNTADHER.S</title>
+    <title>MUNTADHER.S | Algorithmic Trading & System Monitor</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js للمخططات البيانية -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Fira+Code:wght@500&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        baseDark: '#050810',
-                        panelDark: '#0b1121',
-                        accentCyan: '#00f2fe',
-                        accentPurple: '#8a2be2'
+                        systemDark: '#0a0e17',
+                        panelDark: '#121826',
+                        brandCyan: '#00e5ff',
+                        brandPurple: '#b388ff',
+                        brandAlert: '#ff1744'
+                    },
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace']
                     }
                 }
             }
         }
     </script>
     <style>
-        body { font-family: 'Cairo', sans-serif; background-color: #050810; color: #e2e8f0; }
+        body { font-family: 'Cairo', sans-serif; background-color: #0a0e17; color: #e2e8f0; }
+        .font-mono { font-family: 'Fira Code', monospace; }
         
-        /* تأثيرات الألواح الزجاجية للوحة التحكم */
+        /* ألواح زجاجية احترافية بدون مبالغة */
         .glass-panel {
-            background: linear-gradient(145deg, rgba(17, 24, 39, 0.7), rgba(17, 24, 39, 0.4));
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            border-radius: 1.25rem;
+            background: rgba(18, 24, 38, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 1rem;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        /* تخصيص شريط التمرير (Scrollbar) */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #050810; }
-        ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #00f2fe; }
+        /* الإشعارات المنبثقة (Toasts) */
+        .toast {
+            position: fixed; bottom: 20px; left: 20px;
+            background: #121826; border-right: 4px solid #00e5ff;
+            color: #fff; padding: 12px 20px; border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transform: translateX(-150%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000; display: flex; align-items: center; gap: 10px;
+        }
+        .toast.show { transform: translateX(0); }
+
+        /* نبض الأزرار التفاعلية */
+        .btn-interactive:active { transform: scale(0.95); }
     </style>
 </head>
-<body class="flex h-screen overflow-hidden selection:bg-cyan-500 selection:text-black">
+<body class="flex h-screen overflow-hidden selection:bg-brandCyan selection:text-black">
 
-    <!-- القائمة الجانبية (Sidebar) -->
-    <aside id="sidebar" class="w-64 flex-shrink-0 glass-panel !rounded-none !border-y-0 !border-r-0 border-l border-white/10 hidden md:flex flex-col transition-all duration-300 relative z-40">
-        <div class="h-20 flex items-center justify-center border-b border-white/5">
-            <span class="font-black text-xl tracking-wider text-white">
-                MUNTADHER<span class="text-cyan-400">.SYS</span>
-            </span>
+    <!-- رسالة توضيحية للعملاء في منصة مستقل -->
+    <div class="absolute top-0 left-0 w-full bg-brandCyan text-systemDark text-xs font-bold text-center py-1 z-50">
+        💡 هذا نموذج تفاعلي (Interactive Prototype) يعكس قدرتي كمهندس على ربط الواجهات ببيانات حية وأنظمة خلفية (Back-end)
+    </div>
+
+    <!-- القائمة الجانبية التفاعلية -->
+    <aside class="w-64 flex-shrink-0 bg-panelDark border-l border-white/5 hidden md:flex flex-col mt-6">
+        <div class="h-20 flex flex-col items-center justify-center border-b border-white/5">
+            <span class="font-black text-xl tracking-wider text-white">MUNTADHER<span class="text-brandCyan">.SYS</span></span>
+            <span class="text-[10px] text-slate-500 font-mono mt-1">v2.0.4 | Algo-Engine</span>
         </div>
         
-        <nav class="flex-1 overflow-y-auto py-6 px-4 space-y-2">
-            <p class="text-[10px] font-bold text-slate-500 mb-4 px-2 tracking-wider">القائمة الرئيسية</p>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-cyan-500/20 to-transparent text-cyan-400 rounded-xl border-r-2 border-cyan-400 transition">
-                <span class="text-lg">📊</span>
-                <span class="font-semibold text-sm">نظرة عامة (Overview)</span>
-            </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-xl transition">
-                <span class="text-lg">📈</span>
-                <span class="font-semibold text-sm">التحليل المالي</span>
-            </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-xl transition">
-                <span class="text-lg">👥</span>
-                <span class="font-semibold text-sm">إدارة المستخدمين</span>
-            </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-xl transition">
-                <span class="text-lg">⚙️</span>
-                <span class="font-semibold text-sm">إعدادات النظام</span>
-            </a>
+        <nav class="flex-1 px-4 py-6 space-y-2" id="sidebar-nav">
+            <button onclick="switchTab('dashboard')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 bg-brandCyan/10 text-brandCyan rounded-lg border-r-2 border-brandCyan transition text-sm font-bold">
+                📊 المراقبة الحية (Live)
+            </button>
+            <button onclick="switchTab('logs')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-lg transition text-sm font-semibold">
+                📋 سجل العمليات (Logs)
+            </button>
+            <button onclick="showToast('جاري تصدير التقرير المالي المجمع بصيغة PDF...')" class="w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-lg transition text-sm font-semibold btn-interactive">
+                📥 تصدير تقرير النظام
+            </button>
         </nav>
-        
-        <div class="p-4 border-t border-white/5">
-            <div class="flex items-center gap-3 px-4 py-3 bg-white/5 rounded-xl border border-white/10">
-                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center font-bold text-black text-xs">MS</div>
-                <div>
-                    <p class="text-xs font-bold text-white">المهندس منتظر</p>
-                    <p class="text-[10px] text-cyan-400">مسؤول النظام (Admin)</p>
-                </div>
-            </div>
-        </div>
     </aside>
 
-    <!-- منطقة المحتوى الرئيسية (Main Content) -->
-    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-baseDark relative">
-        <!-- إضاءة خلفية للوحة -->
-        <div class="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-[100px] pointer-events-none"></div>
-
-        <!-- الهيدر العلوي -->
-        <header class="h-20 glass-panel !rounded-none !border-x-0 !border-t-0 border-b border-white/5 flex items-center justify-between px-6 z-10">
+    <!-- منطقة المحتوى -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-systemDark mt-6">
+        
+        <!-- الهيدر -->
+        <header class="h-16 border-b border-white/5 flex items-center justify-between px-6 bg-panelDark/50 backdrop-blur-md">
+            <h1 class="text-lg font-bold text-white">منصة التداول الآلي ومراقبة الخوادم</h1>
             <div class="flex items-center gap-4">
-                <button id="mobile-menu-btn" class="md:hidden text-slate-400 hover:text-white">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                <button onclick="simulateData()" class="bg-brandCyan text-systemDark font-bold px-4 py-1.5 rounded-md text-xs btn-interactive shadow-[0_0_15px_rgba(0,229,255,0.4)] transition hover:bg-white">
+                    🔄 محاكاة بيانات حية
                 </button>
-                <h1 class="text-lg md:text-xl font-bold text-white tracking-wide">لوحة التحكم والمؤشرات الذكية</h1>
-            </div>
-            
-            <div class="flex items-center gap-4">
-                <div class="hidden md:flex items-center bg-panelDark border border-white/10 rounded-full px-4 py-1.5">
-                    <span class="text-xs text-slate-400">حالة الخادم:</span>
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 ml-2 mr-2 animate-pulse"></span>
-                    <span class="text-xs font-bold text-emerald-400">ممتاز (99.9%)</span>
+                <div class="flex items-center bg-systemDark border border-white/10 rounded-full px-3 py-1">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 ml-2 animate-pulse"></span>
+                    <span class="text-[11px] font-mono text-emerald-400">Server: ONLINE</span>
                 </div>
-                <button class="w-10 h-10 rounded-full bg-panelDark border border-white/10 flex items-center justify-center text-slate-400 hover:text-cyan-400 transition relative">
-                    🔔
-                    <span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-red-500 border border-panelDark"></span>
-                </button>
             </div>
         </header>
 
-        <!-- المحتوى الداخلي (Scrollable) -->
-        <div class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 z-10">
+        <!-- التبويبات (Content Areas) -->
+        <div class="flex-1 overflow-y-auto p-6" id="main-content">
             
-            <!-- بطاقات الإحصائيات (Stat Cards) -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <!-- بطاقة 1 -->
-                <div class="glass-panel p-6 relative overflow-hidden group">
-                    <div class="absolute -left-6 -top-6 w-20 h-20 bg-cyan-500/10 rounded-full blur-xl"></div>
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <p class="text-xs text-slate-400 font-semibold mb-1">إجمالي العمليات المعالجة</p>
-                            <h3 class="text-2xl font-black text-white">124,592</h3>
+            <!-- تبويب 1: المراقبة الحية -->
+            <div id="tab-dashboard" class="space-y-6">
+                <!-- الإحصائيات -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="glass-panel p-6">
+                        <p class="text-xs text-slate-400 mb-2">إجمالي الصفقات المعالجة (C++ Engine)</p>
+                        <h3 class="text-3xl font-mono text-white mb-2" id="stat-trades">14,290</h3>
+                        <p class="text-[10px] text-brandCyan">+240 صفقة/ثانية (Live)</p>
+                    </div>
+                    <div class="glass-panel p-6">
+                        <p class="text-xs text-slate-400 mb-2">استهلاك الخادم (CPU Load)</p>
+                        <h3 class="text-3xl font-mono text-white mb-2"><span id="stat-cpu">12</span>%</h3>
+                        <div class="w-full bg-slate-800 rounded-full h-1 mt-2">
+                            <div class="bg-brandPurple h-1 rounded-full transition-all duration-500" id="cpu-bar" style="width: 12%"></div>
                         </div>
-                        <div class="w-10 h-10 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 text-lg">⚡</div>
                     </div>
-                    <div class="flex items-center gap-2 text-xs">
-                        <span class="text-emerald-400 font-bold flex items-center">↑ 12.5%</span>
-                        <span class="text-slate-500">مقارنة بالشهر الماضي</span>
-                    </div>
-                </div>
-
-                <!-- بطاقة 2 -->
-                <div class="glass-panel p-6 relative overflow-hidden group">
-                    <div class="absolute -left-6 -top-6 w-20 h-20 bg-purple-500/10 rounded-full blur-xl"></div>
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <p class="text-xs text-slate-400 font-semibold mb-1">المستخدمين النشطين (Live)</p>
-                            <h3 class="text-2xl font-black text-white">8,342</h3>
-                        </div>
-                        <div class="w-10 h-10 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 text-lg">👥</div>
-                    </div>
-                    <div class="flex items-center gap-2 text-xs">
-                        <span class="text-emerald-400 font-bold flex items-center">↑ 4.2%</span>
-                        <span class="text-slate-500">معدل استقرار عالي</span>
+                    <div class="glass-panel p-6">
+                        <p class="text-xs text-slate-400 mb-2">زمن الاستجابة (Latency)</p>
+                        <h3 class="text-3xl font-mono text-white mb-2"><span id="stat-ping">18</span>ms</h3>
+                        <p class="text-[10px] text-emerald-400">اتصال مباشر بـ API التداول</p>
                     </div>
                 </div>
 
-                <!-- بطاقة 3 -->
-                <div class="glass-panel p-6 relative overflow-hidden group">
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <p class="text-xs text-slate-400 font-semibold mb-1">زمن الاستجابة (Latency)</p>
-                            <h3 class="text-2xl font-black text-white">42 <span class="text-sm text-slate-500">ms</span></h3>
-                        </div>
-                        <div class="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-lg">⏱️</div>
-                    </div>
-                    <div class="w-full bg-slate-800 rounded-full h-1.5 mb-2 mt-4">
-                        <div class="bg-cyan-400 h-1.5 rounded-full" style="width: 15%"></div>
-                    </div>
-                    <p class="text-[10px] text-slate-500">سرعة الخادم ممتازة</p>
-                </div>
-
-                <!-- بطاقة 4 -->
-                <div class="glass-panel p-6 relative overflow-hidden group">
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <p class="text-xs text-slate-400 font-semibold mb-1">معدل الخطأ (Error Rate)</p>
-                            <h3 class="text-2xl font-black text-white">0.01%</h3>
-                        </div>
-                        <div class="w-10 h-10 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 text-lg">🛡️</div>
-                    </div>
-                    <div class="flex items-center gap-2 text-xs mt-4">
-                        <span class="text-emerald-400 font-bold">نظام مستقر وآمن</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- قسم الرسوم البيانية (Charts) -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                <!-- المخطط الرئيسي -->
-                <div class="glass-panel p-6 lg:col-span-2">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="font-bold text-white">تحليل تدفق البيانات والعمليات (شهرياً)</h3>
-                        <select class="bg-panelDark border border-white/10 text-xs text-slate-300 rounded-lg px-3 py-1 outline-none focus:border-cyan-500">
-                            <option>آخر 6 أشهر</option>
-                            <option>هذا العام</option>
-                        </select>
-                    </div>
-                    <div class="h-64 w-full relative">
-                        <canvas id="mainChart"></canvas>
-                    </div>
-                </div>
-
-                <!-- المخطط الدائري -->
+                <!-- المخطط البياني -->
                 <div class="glass-panel p-6">
-                    <h3 class="font-bold text-white mb-6">مصادر الترافيك (Traffic)</h3>
-                    <div class="h-52 w-full relative flex justify-center">
-                        <canvas id="doughnutChart"></canvas>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-white text-sm">معدل الأرباح / الخسائر الآلية (بالدولار)</h3>
+                        <span class="text-[10px] bg-white/5 border border-white/10 px-2 py-1 rounded text-slate-300">يتم التحديث فورياً</span>
                     </div>
-                    <div class="mt-6 flex justify-center gap-4 text-xs">
-                        <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-cyan-400"></span><span class="text-slate-400">أنظمة</span></div>
-                        <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-purple-500"></span><span class="text-slate-400">موبايل</span></div>
-                        <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-blue-500"></span><span class="text-slate-400">ويب</span></div>
+                    <div class="h-72 w-full">
+                        <canvas id="algoChart"></canvas>
                     </div>
                 </div>
             </div>
 
-            <!-- جدول العمليات الأخيرة -->
-            <div class="glass-panel p-6 mb-8 overflow-hidden">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="font-bold text-white">سجل النظام والعمليات الأخيرة (System Logs)</h3>
-                    <button class="text-xs text-cyan-400 hover:text-cyan-300 transition">عرض الكل</button>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-right">
-                        <thead class="text-xs text-slate-400 uppercase bg-white/5 border-b border-white/10">
+            <!-- تبويب 2: سجل العمليات -->
+            <div id="tab-logs" class="hidden">
+                <div class="glass-panel p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-bold text-white">سجل العمليات الخوارزمية (Python Scripts)</h3>
+                        <button onclick="showToast('تم مسح السجل المؤقت بنجاح')" class="text-xs text-brandAlert border border-brandAlert/30 px-3 py-1 rounded hover:bg-brandAlert/10 transition btn-interactive">مسح السجل</button>
+                    </div>
+                    <table class="w-full text-right text-sm">
+                        <thead class="text-[11px] text-slate-400 bg-white/5">
                             <tr>
-                                <th class="px-4 py-3 rounded-tr-lg">معرف العملية (ID)</th>
-                                <th class="px-4 py-3">النوع</th>
-                                <th class="px-4 py-3">الحالة</th>
-                                <th class="px-4 py-3">التاريخ والوقت</th>
-                                <th class="px-4 py-3 rounded-tl-lg">تنفيذ / هندسة</th>
+                                <th class="p-3">Process ID</th>
+                                <th class="p-3">الخوارزمية</th>
+                                <th class="p-3">الحالة</th>
+                                <th class="p-3">التفاصيل / IP</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-white/5">
-                            <tr class="hover:bg-white/5 transition">
-                                <td class="px-4 py-4 font-mono text-cyan-400">#SYS-8902</td>
-                                <td class="px-4 py-4 text-slate-300">تحديث خوارزمية التوزيع</td>
-                                <td class="px-4 py-4"><span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-md text-[10px] font-bold">ناجح</span></td>
-                                <td class="px-4 py-4 text-slate-400 text-xs">اليوم, 10:42 AM</td>
-                                <td class="px-4 py-4 text-slate-300">MUNTADHER.S</td>
+                        <tbody class="divide-y divide-white/5 text-xs" id="log-table">
+                            <tr class="hover:bg-white/5">
+                                <td class="p-3 font-mono text-brandCyan">#PY-883</td>
+                                <td class="p-3 text-slate-300">تحليل مؤشر RSI</td>
+                                <td class="p-3"><span class="text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded">نجاح</span></td>
+                                <td class="p-3 font-mono text-slate-500">192.168.1.104</td>
                             </tr>
-                            <tr class="hover:bg-white/5 transition">
-                                <td class="px-4 py-4 font-mono text-cyan-400">#API-3321</td>
-                                <td class="px-4 py-4 text-slate-300">طلب استخراج بيانات مالية</td>
-                                <td class="px-4 py-4"><span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-md text-[10px] font-bold">ناجح</span></td>
-                                <td class="px-4 py-4 text-slate-400 text-xs">اليوم, 09:15 AM</td>
-                                <td class="px-4 py-4 text-slate-300">Automated Script</td>
+                            <tr class="hover:bg-white/5">
+                                <td class="p-3 font-mono text-brandCyan">#CPP-012</td>
+                                <td class="p-3 text-slate-300">محرك توزيع البيانات</td>
+                                <td class="p-3"><span class="text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded">نجاح</span></td>
+                                <td class="p-3 font-mono text-slate-500">Localhost</td>
                             </tr>
-                            <tr class="hover:bg-white/5 transition">
-                                <td class="px-4 py-4 font-mono text-cyan-400">#ERR-9011</td>
-                                <td class="px-4 py-4 text-slate-300">فشل في الاتصال بقاعدة البيانات</td>
-                                <td class="px-4 py-4"><span class="bg-red-500/10 text-red-400 border border-red-500/20 px-2.5 py-1 rounded-md text-[10px] font-bold">تمت المعالجة</span></td>
-                                <td class="px-4 py-4 text-slate-400 text-xs">أمس, 11:30 PM</td>
-                                <td class="px-4 py-4 text-slate-300">System Watchdog</td>
+                            <tr class="hover:bg-white/5">
+                                <td class="p-3 font-mono text-brandAlert">#API-ERR</td>
+                                <td class="p-3 text-slate-300">اتصال سيرفر التداول</td>
+                                <td class="p-3"><span class="text-brandAlert bg-brandAlert/10 px-2 py-0.5 rounded">إعادة محاولة</span></td>
+                                <td class="p-3 font-mono text-slate-500">Timeout 30ms</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- الفوتر 2025 -->
-            <footer class="text-center text-[10px] text-slate-500 pt-4 pb-2 border-t border-white/5">
-                <p>جميع الحقوق محفوظة © 2025 | تصميم وبرمجة المهندس MUNTADHER.S (نموذج لوحة تحكم للعرض)</p>
-            </footer>
-
         </div>
     </main>
 
-    <!-- أكواد الـ JavaScript للرسوم البيانية والموبايل -->
-    <script>
-        // إعدادات المخطط الرئيسي (Line Chart)
-        const ctxMain = document.getElementById('mainChart').getContext('2d');
-        
-        // إنشاء تدرج لوني جميل للمخطط
-        let gradientCyan = ctxMain.createLinearGradient(0, 0, 0, 400);
-        gradientCyan.addColorStop(0, 'rgba(0, 242, 254, 0.5)');
-        gradientCyan.addColorStop(1, 'rgba(0, 242, 254, 0.0)');
+    <!-- الإشعار المنبثق -->
+    <div id="toast" class="toast">
+        <span class="text-xl">✅</span>
+        <span id="toast-msg" class="text-sm font-semibold"></span>
+    </div>
 
-        new Chart(ctxMain, {
+    <script>
+        // --- 1. إدارة التبويبات (Tabs Logic) ---
+        function switchTab(tabId) {
+            // إخفاء كل التبويبات
+            document.getElementById('tab-dashboard').classList.add('hidden');
+            document.getElementById('tab-logs').classList.add('hidden');
+            
+            // إظهار التبويب المطلوب
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+
+            // تغيير شكل الأزرار النشطة
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => {
+                btn.className = 'tab-btn w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-lg transition text-sm font-semibold';
+            });
+            event.currentTarget.className = 'tab-btn w-full flex items-center gap-3 px-4 py-3 bg-brandCyan/10 text-brandCyan rounded-lg border-r-2 border-brandCyan transition text-sm font-bold';
+        }
+
+        // --- 2. نظام الإشعارات (Toast Notifications) ---
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+
+        // --- 3. إعداد المخطط البياني (Chart.js) ---
+        const ctx = document.getElementById('algoChart').getContext('2d');
+        let chartData = [120, 190, 150, 280, 220, 350, 310];
+        
+        // تدرج لوني أزرق سايبربانك
+        let gradient = ctx.createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, 'rgba(0, 229, 255, 0.4)');
+        gradient.addColorStop(1, 'rgba(0, 229, 255, 0.0)');
+
+        let myChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو'],
+                labels: ['10:00', '10:05', '10:10', '10:15', '10:20', '10:25', '10:30'],
                 datasets: [{
-                    label: 'حجم معالجة البيانات',
-                    data: [12000, 19000, 15000, 25000, 22000, 30000],
-                    borderColor: '#00f2fe',
-                    backgroundColor: gradientCyan,
-                    borderWidth: 3,
-                    pointBackgroundColor: '#050810',
-                    pointBorderColor: '#00f2fe',
-                    pointBorderWidth: 2,
-                    pointRadius: 4,
+                    label: 'الأرباح (USD)',
+                    data: chartData,
+                    borderColor: '#00e5ff',
+                    backgroundColor: gradient,
+                    borderWidth: 2,
                     fill: true,
-                    tension: 0.4 // لجعل الخط منحني وناعم
+                    tension: 0.4,
+                    pointBackgroundColor: '#0a0e17',
+                    pointBorderColor: '#00e5ff',
+                    pointRadius: 4
                 }]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                },
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
                 scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                        ticks: { color: '#94a3b8', font: { family: 'Cairo' } }
-                    },
-                    x: {
-                        grid: { display: false },
-                        ticks: { color: '#94a3b8', font: { family: 'Cairo' } }
-                    }
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b', font: {family: 'Fira Code'} } },
+                    x: { grid: { display: false }, ticks: { color: '#64748b', font: {family: 'Fira Code'} } }
                 }
             }
         });
 
-        // إعدادات المخطط الدائري (Doughnut Chart)
-        const ctxDoughnut = document.getElementById('doughnutChart').getContext('2d');
-        new Chart(ctxDoughnut, {
-            type: 'doughnut',
-            data: {
-                labels: ['أنظمة (API)', 'موبايل', 'ويب'],
-                datasets: [{
-                    data: [55, 25, 20],
-                    backgroundColor: ['#00f2fe', '#8a2be2', '#3b82f6'],
-                    borderWidth: 0,
-                    hoverOffset: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '75%', // لجعله نحيف وأنيق
-                plugins: {
-                    legend: { display: false }
-                }
-            }
-        });
+        // --- 4. محاكاة البيانات الحية (Live Data Simulation) ---
+        let currentTrades = 14290;
+        function simulateData() {
+            // تحديث الأرقام العشوائية
+            currentTrades += Math.floor(Math.random() * 50) + 10;
+            let newCpu = Math.floor(Math.random() * 40) + 10;
+            let newPing = Math.floor(Math.random() * 15) + 5;
 
-        // تشغيل/إخفاء القائمة الجانبية في الموبايل
-        const mobileBtn = document.getElementById('mobile-menu-btn');
-        const sidebar = document.getElementById('sidebar');
-        
-        mobileBtn.addEventListener('click', () => {
-            if(sidebar.classList.contains('hidden')) {
-                sidebar.classList.remove('hidden');
-                sidebar.classList.add('absolute', 'h-full', 'w-64');
-            } else {
-                sidebar.classList.add('hidden');
-                sidebar.classList.remove('absolute', 'h-full', 'w-64');
-            }
-        });
+            // تطبيق القيم في الواجهة
+            document.getElementById('stat-trades').innerText = currentTrades.toLocaleString();
+            document.getElementById('stat-cpu').innerText = newCpu;
+            document.getElementById('cpu-bar').style.width = newCpu + '%';
+            document.getElementById('stat-ping').innerText = newPing;
+
+            // تغيير لون الـ CPU إذا ارتفع عن 40
+            if(newCpu > 40) document.getElementById('cpu-bar').className = 'bg-brandAlert h-1 rounded-full transition-all duration-500';
+            else document.getElementById('cpu-bar').className = 'bg-brandPurple h-1 rounded-full transition-all duration-500';
+
+            // تحديث المخطط البياني بقيمة جديدة وإزالة القديمة
+            let newValue = chartData[chartData.length - 1] + (Math.random() * 60 - 20);
+            chartData.shift();
+            chartData.push(newValue);
+            myChart.update();
+
+            // إضافة سطر جديد لسجل العمليات
+            const tbody = document.getElementById('log-table');
+            const newRow = document.createElement('tr');
+            newRow.className = 'hover:bg-white/5 bg-brandCyan/5 animate-pulse';
+            newRow.innerHTML = `
+                <td class="p-3 font-mono text-brandCyan">#SIM-${Math.floor(Math.random()*1000)}</td>
+                <td class="p-3 text-slate-300">معاملة خوارزمية جديدة</td>
+                <td class="p-3"><span class="text-brandPurple bg-brandPurple/10 px-2 py-0.5 rounded">تم التنفيذ</span></td>
+                <td class="p-3 font-mono text-slate-500">Live API</td>
+            `;
+            tbody.prepend(newRow);
+            if(tbody.children.length > 5) tbody.lastElementChild.remove(); // الحفاظ على 5 أسطر فقط
+
+            // إظهار إشعار النظام
+            showToast('تم استقبال حزمة بيانات جديدة من الخادم بنجاح ⚡');
+        }
     </script>
 </body>
 </html>
