@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUNTADHER.S | Algorithmic Trading & System Monitor</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js للمخططات البيانية -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Fira+Code:wght@500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        systemDark: '#0a0e17',
+                        panelDark: '#121826',
+                        brandCyan: '#00e5ff',
+                        brandPurple: '#b388ff',
+                        brandAlert: '#ff1744'
+                    },
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Cairo', sans-serif; background-color: #0a0e17; color: #e2e8f0; }
+        .font-mono { font-family: 'Fira Code', monospace; }
+        
+        /* ألواح زجاجية احترافية بدون مبالغة */
+        .glass-panel {
+            background: rgba(18, 24, 38, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 1rem;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        /* الإشعارات المنبثقة (Toasts) */
+        .toast {
+            position: fixed; bottom: 20px; left: 20px;
+            background: #121826; border-right: 4px solid #00e5ff;
+            color: #fff; padding: 12px 20px; border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transform: translateX(-150%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000; display: flex; align-items: center; gap: 10px;
+        }
+        .toast.show { transform: translateX(0); }
+
+        /* نبض الأزرار التفاعلية */
+        .btn-interactive:active { transform: scale(0.95); }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden selection:bg-brandCyan selection:text-black">
+
+    <!-- رسالة توضيحية للعملاء في منصة مستقل -->
+    <div class="absolute top-0 left-0 w-full bg-brandCyan text-systemDark text-xs font-bold text-center py-1 z-50">
+        💡 هذا نموذج تفاعلي (Interactive Prototype) يعكس قدرتي كمهندس على ربط الواجهات ببيانات حية وأنظمة خلفية (Back-end)
+    </div>
+
+    <!-- القائمة الجانبية التفاعلية -->
+    <aside class="w-64 flex-shrink-0 bg-panelDark border-l border-white/5 hidden md:flex flex-col mt-6">
+        <div class="h-20 flex flex-col items-center justify-center border-b border-white/5">
+            <span class="font-black text-xl tracking-wider text-white">MUNTADHER<span class="text-brandCyan">.SYS</span></span>
+            <span class="text-[10px] text-slate-500 font-mono mt-1">v2.0.4 | Algo-Engine</span>
+        </div>
+        
+        <nav class="flex-1 px-4 py-6 space-y-2" id="sidebar-nav">
+            <button onclick="switchTab('dashboard')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 bg-brandCyan/10 text-brandCyan rounded-lg border-r-2 border-brandCyan transition text-sm font-bold">
+                📊 المراقبة الحية (Live)
+            </button>
+            <button onclick="switchTab('logs')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-lg transition text-sm font-semibold">
+                📋 سجل العمليات (Logs)
+            </button>
+            <button onclick="showToast('جاري تصدير التقرير المالي المجمع بصيغة PDF...')" class="w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-lg transition text-sm font-semibold btn-interactive">
+                📥 تصدير تقرير النظام
+            </button>
+        </nav>
+    </aside>
+
+    <!-- منطقة المحتوى -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-systemDark mt-6">
+        
+        <!-- الهيدر -->
+        <header class="h-16 border-b border-white/5 flex items-center justify-between px-6 bg-panelDark/50 backdrop-blur-md">
+            <h1 class="text-lg font-bold text-white">منصة التداول الآلي ومراقبة الخوادم</h1>
+            <div class="flex items-center gap-4">
+                <button onclick="simulateData()" class="bg-brandCyan text-systemDark font-bold px-4 py-1.5 rounded-md text-xs btn-interactive shadow-[0_0_15px_rgba(0,229,255,0.4)] transition hover:bg-white">
+                    🔄 محاكاة بيانات حية
+                </button>
+                <div class="flex items-center bg-systemDark border border-white/10 rounded-full px-3 py-1">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 ml-2 animate-pulse"></span>
+                    <span class="text-[11px] font-mono text-emerald-400">Server: ONLINE</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- التبويبات (Content Areas) -->
+        <div class="flex-1 overflow-y-auto p-6" id="main-content">
+            
+            <!-- تبويب 1: المراقبة الحية -->
+            <div id="tab-dashboard" class="space-y-6">
+                <!-- الإحصائيات -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="glass-panel p-6">
+                        <p class="text-xs text-slate-400 mb-2">إجمالي الصفقات المعالجة (C++ Engine)</p>
+                        <h3 class="text-3xl font-mono text-white mb-2" id="stat-trades">14,290</h3>
+                        <p class="text-[10px] text-brandCyan">+240 صفقة/ثانية (Live)</p>
+                    </div>
+                    <div class="glass-panel p-6">
+                        <p class="text-xs text-slate-400 mb-2">استهلاك الخادم (CPU Load)</p>
+                        <h3 class="text-3xl font-mono text-white mb-2"><span id="stat-cpu">12</span>%</h3>
+                        <div class="w-full bg-slate-800 rounded-full h-1 mt-2">
+                            <div class="bg-brandPurple h-1 rounded-full transition-all duration-500" id="cpu-bar" style="width: 12%"></div>
+                        </div>
+                    </div>
+                    <div class="glass-panel p-6">
+                        <p class="text-xs text-slate-400 mb-2">زمن الاستجابة (Latency)</p>
+                        <h3 class="text-3xl font-mono text-white mb-2"><span id="stat-ping">18</span>ms</h3>
+                        <p class="text-[10px] text-emerald-400">اتصال مباشر بـ API التداول</p>
+                    </div>
+                </div>
+
+                <!-- المخطط البياني -->
+                <div class="glass-panel p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-white text-sm">معدل الأرباح / الخسائر الآلية (بالدولار)</h3>
+                        <span class="text-[10px] bg-white/5 border border-white/10 px-2 py-1 rounded text-slate-300">يتم التحديث فورياً</span>
+                    </div>
+                    <div class="h-72 w-full">
+                        <canvas id="algoChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- تبويب 2: سجل العمليات -->
+            <div id="tab-logs" class="hidden">
+                <div class="glass-panel p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-bold text-white">سجل العمليات الخوارزمية (Python Scripts)</h3>
+                        <button onclick="showToast('تم مسح السجل المؤقت بنجاح')" class="text-xs text-brandAlert border border-brandAlert/30 px-3 py-1 rounded hover:bg-brandAlert/10 transition btn-interactive">مسح السجل</button>
+                    </div>
+                    <table class="w-full text-right text-sm">
+                        <thead class="text-[11px] text-slate-400 bg-white/5">
+                            <tr>
+                                <th class="p-3">Process ID</th>
+                                <th class="p-3">الخوارزمية</th>
+                                <th class="p-3">الحالة</th>
+                                <th class="p-3">التفاصيل / IP</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-white/5 text-xs" id="log-table">
+                            <tr class="hover:bg-white/5">
+                                <td class="p-3 font-mono text-brandCyan">#PY-883</td>
+                                <td class="p-3 text-slate-300">تحليل مؤشر RSI</td>
+                                <td class="p-3"><span class="text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded">نجاح</span></td>
+                                <td class="p-3 font-mono text-slate-500">192.168.1.104</td>
+                            </tr>
+                            <tr class="hover:bg-white/5">
+                                <td class="p-3 font-mono text-brandCyan">#CPP-012</td>
+                                <td class="p-3 text-slate-300">محرك توزيع البيانات</td>
+                                <td class="p-3"><span class="text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded">نجاح</span></td>
+                                <td class="p-3 font-mono text-slate-500">Localhost</td>
+                            </tr>
+                            <tr class="hover:bg-white/5">
+                                <td class="p-3 font-mono text-brandAlert">#API-ERR</td>
+                                <td class="p-3 text-slate-300">اتصال سيرفر التداول</td>
+                                <td class="p-3"><span class="text-brandAlert bg-brandAlert/10 px-2 py-0.5 rounded">إعادة محاولة</span></td>
+                                <td class="p-3 font-mono text-slate-500">Timeout 30ms</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- الإشعار المنبثق -->
+    <div id="toast" class="toast">
+        <span class="text-xl">✅</span>
+        <span id="toast-msg" class="text-sm font-semibold"></span>
+    </div>
+
+    <script>
+        // --- 1. إدارة التبويبات (Tabs Logic) ---
+        function switchTab(tabId) {
+            // إخفاء كل التبويبات
+            document.getElementById('tab-dashboard').classList.add('hidden');
+            document.getElementById('tab-logs').classList.add('hidden');
+            
+            // إظهار التبويب المطلوب
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+
+            // تغيير شكل الأزرار النشطة
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => {
+                btn.className = 'tab-btn w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-lg transition text-sm font-semibold';
+            });
+            event.currentTarget.className = 'tab-btn w-full flex items-center gap-3 px-4 py-3 bg-brandCyan/10 text-brandCyan rounded-lg border-r-2 border-brandCyan transition text-sm font-bold';
+        }
+
+        // --- 2. نظام الإشعارات (Toast Notifications) ---
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+
+        // --- 3. إعداد المخطط البياني (Chart.js) ---
+        const ctx = document.getElementById('algoChart').getContext('2d');
+        let chartData = [120, 190, 150, 280, 220, 350, 310];
+        
+        // تدرج لوني أزرق سايبربانك
+        let gradient = ctx.createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, 'rgba(0, 229, 255, 0.4)');
+        gradient.addColorStop(1, 'rgba(0, 229, 255, 0.0)');
+
+        let myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['10:00', '10:05', '10:10', '10:15', '10:20', '10:25', '10:30'],
+                datasets: [{
+                    label: 'الأرباح (USD)',
+                    data: chartData,
+                    borderColor: '#00e5ff',
+                    backgroundColor: gradient,
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#0a0e17',
+                    pointBorderColor: '#00e5ff',
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b', font: {family: 'Fira Code'} } },
+                    x: { grid: { display: false }, ticks: { color: '#64748b', font: {family: 'Fira Code'} } }
+                }
+            }
+        });
+
+        // --- 4. محاكاة البيانات الحية (Live Data Simulation) ---
+        let currentTrades = 14290;
+        function simulateData() {
+            // تحديث الأرقام العشوائية
+            currentTrades += Math.floor(Math.random() * 50) + 10;
+            let newCpu = Math.floor(Math.random() * 40) + 10;
+            let newPing = Math.floor(Math.random() * 15) + 5;
+
+            // تطبيق القيم في الواجهة
+            document.getElementById('stat-trades').innerText = currentTrades.toLocaleString();
+            document.getElementById('stat-cpu').innerText = newCpu;
+            document.getElementById('cpu-bar').style.width = newCpu + '%';
+            document.getElementById('stat-ping').innerText = newPing;
+
+            // تغيير لون الـ CPU إذا ارتفع عن 40
+            if(newCpu > 40) document.getElementById('cpu-bar').className = 'bg-brandAlert h-1 rounded-full transition-all duration-500';
+            else document.getElementById('cpu-bar').className = 'bg-brandPurple h-1 rounded-full transition-all duration-500';
+
+            // تحديث المخطط البياني بقيمة جديدة وإزالة القديمة
+            let newValue = chartData[chartData.length - 1] + (Math.random() * 60 - 20);
+            chartData.shift();
+            chartData.push(newValue);
+            myChart.update();
+
+            // إضافة سطر جديد لسجل العمليات
+            const tbody = document.getElementById('log-table');
+            const newRow = document.createElement('tr');
+            newRow.className = 'hover:bg-white/5 bg-brandCyan/5 animate-pulse';
+            newRow.innerHTML = `
+                <td class="p-3 font-mono text-brandCyan">#SIM-${Math.floor(Math.random()*1000)}</td>
+                <td class="p-3 text-slate-300">معاملة خوارزمية جديدة</td>
+                <td class="p-3"><span class="text-brandPurple bg-brandPurple/10 px-2 py-0.5 rounded">تم التنفيذ</span></td>
+                <td class="p-3 font-mono text-slate-500">Live API</td>
+            `;
+            tbody.prepend(newRow);
+            if(tbody.children.length > 5) tbody.lastElementChild.remove(); // الحفاظ على 5 أسطر فقط
+
+            // إظهار إشعار النظام
+            showToast('تم استقبال حزمة بيانات جديدة من الخادم بنجاح ⚡');
+        }
+    </script>
+</body>
+</html>
